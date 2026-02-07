@@ -3,27 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pink Chat App</title>
+<title>🫦🫦👅</title>
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#ffe6f0;display:flex;flex-direction:column;height:100vh;overflow:hidden;}
 header{background:#d81b60;color:white;padding:15px;text-align:center;font-size:20px;position:relative;}
 header button{position:absolute;right:10px;top:10px;padding:8px 15px;border:none;border-radius:8px;background:#f06292;color:white;cursor:pointer;}
 header button:hover{background:#c2185b;}
-#chatBox{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;padding-bottom:80px;background:#ffe6f0;}
-.message{padding:10px 15px;border-radius:20px;max-width:70%;position:relative;word-wrap:break-word;font-size:14px;}
+#chatBox{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;padding-bottom:130px;background:#ffe6f0;}
+.message{padding:10px 15px;border-radius:20px;max-width:70%;position:relative;word-wrap:break-word;font-size:14px;cursor:pointer;}
 .message.self{background:#f8bbd0;align-self:flex-end;border-bottom-right-radius:5px;}
 .message.other{background:#ffffff;align-self:flex-start;box-shadow:0 1px 2px rgba(0,0,0,0.2);border-bottom-left-radius:5px;}
 .message .sender{font-weight:bold;font-size:13px;margin-bottom:3px;display:block;color:#880e4f;}
 .message .time{font-size:11px;color:#888;margin-top:3px;display:block;text-align:right;}
 .message.pinned{border:2px solid #ff4081;}
-.linkPreview{border:1px solid #ff80ab;border-radius:10px;margin-top:5px;padding:5px;background:#ffe6f0;}
-.linkPreview img{max-width:100%;border-radius:5px;margin-top:5px;}
-#sendSection{position:fixed;bottom:0;left:0;right:0;display:flex;padding:10px;background:#ffffff;align-items:center;box-shadow:0 -2px 5px rgba(0,0,0,0.1);z-index:1000;}
+.replyBox{padding:5px 10px;border-left:3px solid #d81b60;background:#ffe6f0;margin-bottom:5px;border-radius:5px;font-size:12px;color:#880e4f;}
+#sendSection{position:fixed;bottom:0;left:0;right:0;display:flex;flex-direction:column;padding:5px 10px;background:#ffffff;box-shadow:0 -2px 5px rgba(0,0,0,0.1);z-index:1000;}
+#replyToDiv{display:none;padding:5px 10px;margin-bottom:5px;border-left:3px solid #d81b60;background:#ffe6f0;border-radius:5px;font-size:12px;color:#880e4f;position:relative;}
+#cancelReply{position:absolute;right:5px;top:2px;cursor:pointer;font-weight:bold;color:#c2185b;}
+#inputRow{display:flex;}
 #msgInput{flex:1;padding:10px;border-radius:20px;border:1px solid #f06292;outline:none;box-sizing:border-box;}
 #sendBtn{padding:10px 20px;margin-left:5px;border:none;border-radius:20px;background:#d81b60;color:white;cursor:pointer;}
 #sendBtn:hover{background:#c2185b;}
 .pinBtn{position:absolute;left:5px;top:5px;color:#ff4081;font-weight:bold;cursor:pointer;}
 .deleteBtn{position:absolute;top:5px;right:5px;color:red;font-weight:bold;cursor:pointer;}
+#manualOverlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);color:white;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:20px;font-family:Arial,sans-serif;z-index:2000;display:none;}
+#manualOverlay ul{text-align:left;max-width:300px;margin:auto;}
+#manualOverlay button{margin-top:15px;padding:10px 20px;border:none;border-radius:8px;background:#d81b60;color:white;font-size:16px;cursor:pointer;}
+#manualOverlay button:hover{background:#c2185b;}
 @media(max-width:480px){.message{max-width:90%;font-size:13px;}#msgInput{padding:8px;}#sendBtn{padding:8px 12px;}}
 </style>
 </head>
@@ -36,17 +42,34 @@ header button:hover{background:#c2185b;}
 <div id="chatBox"></div>
 
 <div id="sendSection">
-  <input type="text" id="msgInput" placeholder="Type a message">
-  <button id="sendBtn">Send</button>
+  <div id="replyToDiv"><span id="replyText"></span> <span id="cancelReply" onclick="cancelReply()">×</span></div>
+  <div id="inputRow">
+    <input type="text" id="msgInput" placeholder="Type a message">
+    <button id="sendBtn">Send</button>
+  </div>
 </div>
 
-<!-- Firebase -->
+<!-- Manual overlay for first time users -->
+<div id="manualOverlay">
+  <h2>Welcome to Pink Chat!</h2>
+  <p>Here are the main features:</p>
+  <ul>
+    <li>💬 Send messages using the input below.</li>
+    <li>↩️ Click any message to reply to it.</li>
+    <li>🕒 See timestamps for each message.</li>
+    <li>📌 Admin can pin messages and delete any message.</li>
+    <li>📱 Keyboard-aware input stays above the keyboard on mobile.</li>
+    <li>⬇️ Chat auto-scrolls to latest message.</li>
+  </ul>
+  <button onclick="closeManual()">Got it!</button>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-// ------------------ Firebase config ------------------
+// ---------------- Firebase config ----------------
 const firebaseConfig = {
   apiKey: "AIzaSyA1NTsIP0Rt0xR96aU-New2eGmLaDLSKXQ",
   authDomain: "onajjkj-c340e.firebaseapp.com",
@@ -61,20 +84,36 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// ------------------ Elements ------------------
 const chatBox = document.getElementById('chatBox');
 const msgInput = document.getElementById('msgInput');
 const sendBtn = document.getElementById('sendBtn');
+const replyToDiv = document.getElementById('replyToDiv');
+const replyText = document.getElementById('replyText');
+const manualOverlay = document.getElementById('manualOverlay');
+
+let replyingTo = null;
 
 const uid = localStorage.getItem('uid');
 const name = localStorage.getItem('name');
 const email = localStorage.getItem('email');
 const adminEmail = "khanaariziqballl.tt1@gmail.com";
 
-// ------------------ Redirect if not logged in ------------------
 if(!uid) window.location.href='index.html';
 
-// ------------------ Send message ------------------
+// ---------------- Show manual first time ----------------
+window.onload = () => {
+  if(!localStorage.getItem('manualShown')){
+    manualOverlay.style.display = 'flex';
+  }
+}
+
+// Close manual
+function closeManual(){
+  localStorage.setItem('manualShown','true');
+  manualOverlay.style.display='none';
+}
+
+// ---------------- Send message ----------------
 function sendMessage(){
   const text = msgInput.value.trim();
   if(!text) return;
@@ -85,96 +124,94 @@ function sendMessage(){
     name,
     email,
     pinned:false,
+    replyTo: replyingTo?replyingTo.id:null,
     time:firebase.firestore.FieldValue.serverTimestamp()
-  }).then(()=> msgInput.value='');
+  }).then(()=> {
+    msgInput.value='';
+    cancelReply();
+  });
 }
 
 sendBtn.addEventListener('click', sendMessage);
 msgInput.addEventListener('keypress', e=>{ if(e.key==='Enter') sendMessage(); });
 
-// ------------------ Format time ------------------
+// ---------------- Format time ----------------
 function formatDateTime(ts){
   if(!ts) return '';
   const d = new Date(ts.seconds*1000);
   return `${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}`;
 }
 
-// ------------------ Create message with link preview ------------------
-async function createMessage(msg){
+// ---------------- Create message ----------------
+async function createMessage(msg, allMsgs){
   const div = document.createElement('div');
   div.className = msg.uid===uid?'message self':'message other';
   if(msg.pinned) div.classList.add('pinned');
 
-  div.innerHTML = `<span class="sender">${msg.name || "Unknown"}</span>${msg.text}<span class="time">${formatDateTime(msg.time)}</span>`;
+  let replyHTML = '';
+  if(msg.replyTo){
+    const origMsg = allMsgs.find(m=>m.id===msg.replyTo);
+    if(origMsg) replyHTML = `<div class="replyBox">${origMsg.name}: ${origMsg.text}</div>`;
+  }
+
+  div.innerHTML = replyHTML + `<span class="sender">${msg.name || "Unknown"}</span>${msg.text}<span class="time">${formatDateTime(msg.time)}</span>`;
+
+  // Reply on click
+  div.onclick = ()=> {
+    replyingTo = msg;
+    replyToDiv.style.display='block';
+    replyText.innerText = `${msg.name}: ${msg.text}`;
+  }
 
   // Admin controls
   if(email===adminEmail){
     const delBtn = document.createElement('span');
     delBtn.className='deleteBtn';
     delBtn.innerText='×';
-    delBtn.onclick = ()=> db.collection('messages').doc(msg.id).delete();
+    delBtn.onclick = (e)=>{ e.stopPropagation(); db.collection('messages').doc(msg.id).delete(); };
     div.appendChild(delBtn);
 
     const pinBtn = document.createElement('span');
     pinBtn.className='pinBtn';
     pinBtn.innerText='📌';
-    pinBtn.onclick = ()=> db.collection('messages').doc(msg.id).update({pinned:true});
+    pinBtn.onclick = (e)=>{ e.stopPropagation(); db.collection('messages').doc(msg.id).update({pinned:true}); };
     div.appendChild(pinBtn);
-  }
-
-  // Detect URL and show preview
-  const urlRegex = /(https?:\/\/[^\s]+)/g;
-  const urls = msg.text.match(urlRegex);
-  if(urls){
-    for(let url of urls){
-      const previewDiv = document.createElement('div');
-      previewDiv.className='linkPreview';
-      previewDiv.innerText='Loading preview...';
-      div.appendChild(previewDiv);
-
-      // Use free API (replace YOUR_API_KEY)
-      fetch(`https://api.linkpreview.net/?key=YOUR_API_KEY&q=${encodeURIComponent(url)}`)
-      .then(res=>res.json())
-      .then(data=>{
-        previewDiv.innerHTML=`
-          <strong>${data.title}</strong>
-          <p>${data.description}</p>
-          ${data.image?`<img src="${data.image}" alt="preview">`:''}
-          <a href="${url}" target="_blank">${url}</a>
-        `;
-      })
-      .catch(()=> previewDiv.innerText=url);
-    }
   }
 
   return div;
 }
 
-// ------------------ Fetch messages ------------------
+// ---------------- Fetch messages ----------------
+let allMessages = [];
 db.collection('messages').orderBy('time')
 .onSnapshot(async snapshot=>{
   chatBox.innerHTML='';
-  for(const doc of snapshot.docs){
-    const msg = {...doc.data(), id:doc.id};
-    const msgEl = await createMessage(msg);
+  allMessages = snapshot.docs.map(doc=>({...doc.data(), id:doc.id}));
+  for(const msg of allMessages){
+    const msgEl = await createMessage(msg, allMessages);
     chatBox.appendChild(msgEl);
   }
   chatBox.scrollTo({top: chatBox.scrollHeight, behavior:'smooth'});
 });
 
-// ------------------ Keyboard-aware ------------------
-let originalHeight = window.innerHeight;
+// ---------------- Cancel reply ----------------
+function cancelReply(){
+  replyingTo = null;
+  replyToDiv.style.display='none';
+}
+
+// ---------------- Keyboard aware ----------------
+let baseHeight = window.innerHeight;
 function adjustForKeyboard(){
-  const currentHeight = window.innerHeight;
-  const kbHeight = originalHeight - currentHeight;
-  chatBox.style.paddingBottom = (kbHeight>150?kbHeight+70:80) + 'px';
+  const kbHeight = baseHeight - window.innerHeight;
+  chatBox.style.paddingBottom = (kbHeight>150?kbHeight+100:130) + 'px';
   chatBox.scrollTo({top: chatBox.scrollHeight, behavior:'smooth'});
 }
 window.addEventListener('resize', adjustForKeyboard);
 msgInput.addEventListener('focus', adjustForKeyboard);
 msgInput.addEventListener('blur', adjustForKeyboard);
 
-// ------------------ Logout ------------------
+// ---------------- Logout ----------------
 function logout(){
   localStorage.clear();
   window.location.href='index.html';
