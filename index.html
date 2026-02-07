@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pink Chat Login/Signup</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#ffe6f0;display:flex;justify-content:center;align-items:center;height:100vh;}
+.container{background:#ffffff;padding:30px;border-radius:15px;box-shadow:0 5px 15px rgba(0,0,0,0.2);width:90%;max-width:400px;}
+h2{text-align:center;margin-bottom:20px;color:#d81b60;}
+input{width:100%;padding:10px;margin:10px 0;border-radius:8px;border:1px solid #d81b60;outline:none;}
+button{width:100%;padding:10px;border:none;border-radius:8px;background:#d81b60;color:white;font-size:16px;cursor:pointer;margin-top:10px;}
+button:hover{background:#c2185b;}
+p{text-align:center;margin-top:10px;}
+a{color:#d81b60;cursor:pointer;text-decoration:underline;}
+#message{color:red;text-align:center;margin-top:10px;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2 id="formTitle">Login</h2>
+
+  <div id="loginForm">
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPass" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <p><a onclick="showSignup()">Don't have an account? Sign Up</a></p>
+    <p><a onclick="forgotPass()">Forgot Password?</a></p>
+  </div>
+
+  <div id="signupForm" style="display:none;">
+    <input type="text" id="fullName" placeholder="Full Name">
+    <input type="text" id="bio" placeholder="Bio">
+    <input type="email" id="signupEmail" placeholder="Email">
+    <input type="password" id="signupPass" placeholder="Password">
+    <button onclick="signup()">Sign Up</button>
+    <p><a onclick="showLogin()">Already have an account? Login</a></p>
+  </div>
+
+  <div id="message"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ------------------ Firebase config ------------------
+const firebaseConfig = {
+  apiKey: "AIzaSyA1NTsIP0Rt0xR96aU-New2eGmLaDLSKXQ",
+  authDomain: "onajjkj-c340e.firebaseapp.com",
+  projectId: "onajjkj-c340e",
+  storageBucket: "onajjkj-c340e.firebasestorage.app",
+  messagingSenderId: "588686832519",
+  appId: "1:588686832519:web:f876e44c4c46756071d922",
+  measurementId: "G-D3BVCZPHPT"
+};
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+const messageEl = document.getElementById('message');
+
+// ------------------ Check persistent login ------------------
+window.onload = () => {
+  const uid = localStorage.getItem('uid');
+  if(uid){
+    window.location.href = 'chat.html';
+  }
+};
+
+// ------------------ Switch forms ------------------
+function showSignup(){
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('signupForm').style.display='block';
+  document.getElementById('formTitle').innerText='Sign Up';
+  messageEl.innerText='';
+}
+function showLogin(){
+  document.getElementById('loginForm').style.display='block';
+  document.getElementById('signupForm').style.display='none';
+  document.getElementById('formTitle').innerText='Login';
+  messageEl.innerText='';
+}
+
+// ------------------ Signup ------------------
+function signup(){
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass = document.getElementById('signupPass').value.trim();
+  const fullName = document.getElementById('fullName').value.trim();
+  const bio = document.getElementById('bio').value.trim();
+
+  if(!email || !pass || !fullName) { messageEl.innerText="Please fill all fields"; return; }
+
+  auth.createUserWithEmailAndPassword(email, pass)
+  .then(userCred=>{
+    userCred.user.sendEmailVerification()
+    .then(()=> alert("Verification email sent! Please verify before login."));
+
+    db.collection('users').doc(userCred.user.uid).set({
+      name: fullName,
+      bio: bio || '',
+      email: email,
+      contacts: [],
+      requests: []
+    });
+
+    showLogin();
+  })
+  .catch(err=>{
+    messageEl.style.color='red';
+    messageEl.innerText=err.message;
+  });
+}
+
+// ------------------ Login ------------------
+function login(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  if(!email || !pass){ messageEl.innerText="Enter email & password"; return; }
+
+  auth.signInWithEmailAndPassword(email, pass)
+  .then(userCred=>{
+    if(!userCred.user.emailVerified){
+      messageEl.style.color='red';
+      messageEl.innerText="Please verify your email first!";
+      auth.signOut();
+      return;
+    }
+
+    db.collection('users').doc(userCred.user.uid).get().then(doc=>{
+      const name = doc.data()?.name || "User";
+      localStorage.setItem('uid', userCred.user.uid);
+      localStorage.setItem('name', name);
+      localStorage.setItem('email', email);
+      window.location.href='chat.html';
+    });
+  })
+  .catch(err=>{
+    messageEl.style.color='red';
+    messageEl.innerText=err.message;
+  });
+}
+
+// ------------------ Forgot password ------------------
+function forgotPass(){
+  const email = prompt("Enter your email for password reset:");
+  if(!email) return;
+  auth.sendPasswordResetEmail(email)
+  .then(()=> alert("Password reset email sent!"))
+  .catch(err=> alert(err.message));
+}
+</script>
+</body>
+</html>
